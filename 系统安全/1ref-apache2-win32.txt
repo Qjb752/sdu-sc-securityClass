@@ -1,0 +1,56 @@
+
+Apache2在Linux上的安装:
+apt/yum install apache2
+apache2ctl start/stop
+
+Apache2在Windows上
+下载、解压缩zip文件到c:\progs\apache24
+修改httpd.conf中必要的配置项，如：
+ServerRoot "c:/progs/Apache24"
+Listen 8086
+ServerName xxx
+httpd.exe /?  # 可见帮助
+httpd -t      # 检查配置文件语法
+httpd -k install
+net start apache2.4
+http://172.28.88.10:8086/ # it works!
+net stop apache2.4
+
+开代理，
+在httpd.cong尾部添加：
+ProxyRequests On 
+ProxyVia On 
+<Proxy *>
+Require all granted
+Require ip 192.168.0.0/16
+</Proxy> 
+
+把LoadModule中proxy相关的打开（去掉行开头的#）
+反复执行net start apache2.4
+遇错的话，根据logs/error.log提示（最后几行）打开模块
+比如xml2、shm、dog等模块（名字是简写）
+直到无错。
+然后代理端口8086可以用了。
+
+
+app1 @ /htdocs/app1/
+给app1增加认证机制
+<Directory "${SRVROOT}/htdocs/app1/">
+    Options Indexes FollowSymLinks
+    allowoverride authconfig 
+</Directory>
+
+C:\progs\Apache24\htdocs\app1>..\..\bin\htpasswd -c ..\..\conf\app1-user.txt zhang3
+
+编辑/app1/.htaccess，内容为：
+AuthName "Basic Auth test"
+AuthType Basic
+AuthUserFile C:/progs/Apache24/conf/app1-user.txt
+require valid-user
+
+net stop apache2.4
+net start apache2.4
+则访问 :8086/app1/会弹出登录框
+
+
+
